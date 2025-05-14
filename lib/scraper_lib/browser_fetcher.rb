@@ -4,7 +4,7 @@ module ScraperLib
   # Fetches HTML content using a headless browser
   class BrowserFetcher < Fetcher
     BROWSER_PATH = "/usr/bin/chromium"
-    
+
     # Fetch HTML content using Ferrum (headless Chrome)
     # @return [String] The HTML content
     # @raise [FetchError] If fetching fails
@@ -14,7 +14,6 @@ module ScraperLib
         browser = create_browser
         browser.headers.set(default_headers.merge(@headers))
         browser.go_to(@url)
-        browser.network.wait_for_idle
         browser.body
       rescue Ferrum::Error => e
         raise FetchError, "Browser-based fetch failed: #{e.message}"
@@ -22,9 +21,9 @@ module ScraperLib
         browser&.quit
       end
     end
-    
+
     private
-    
+
     def create_browser
       Ferrum::Browser.new(
         path: BROWSER_PATH,
@@ -33,7 +32,7 @@ module ScraperLib
         browser_options: browser_options
       )
     end
-    
+
     def browser_options
       {
         'no-sandbox': nil,
