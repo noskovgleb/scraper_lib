@@ -5,6 +5,7 @@ PATH
       ferrum
       httparty
       nokogiri
+      webmock
 
 GEM
   remote: https://rubygems.org/
@@ -95,7 +96,6 @@ DEPENDENCIES
   minitest (~> 5.16)
   rake (~> 13.0)
   scraper_lib!
-  webmock
 
 BUNDLED WITH
    2.6.7

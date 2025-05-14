@@ -5,6 +5,10 @@ require_relative "scraper_lib/errors"
 require_relative "scraper_lib/fetcher"
 require_relative "scraper_lib/http_fetcher"
 require_relative "scraper_lib/browser_fetcher"
+require_relative "scraper_lib/extractor"
+require_relative "scraper_lib/css_extractor"
+require_relative "scraper_lib/meta_extractor"
+require_relative "scraper_lib/extractor_factory"
 require "httparty"
 require "nokogiri"
 require 'ferrum'
@@ -28,7 +32,7 @@ module ScraperLib
     end
 
     # Scrape data from the webpage using the provided CSS selectors
-    # @param fields [Hash] A hash mapping field names to CSS selectors
+    # @param fields [Hash] A hash mapping field names to CSS selectors or meta tag names
     # @return [Hash] A hash mapping field names to extracted values
     def scrape(fields = {})
       html = fetch_html
@@ -58,8 +62,9 @@ module ScraperLib
     def extract_data(html, fields)
       doc = Nokogiri::HTML(html)
 
-      fields.each_with_object({}) do |(key, selector), result|
-        result[key] = doc.at_css(selector)&.text&.strip
+      fields.each_with_object({}) do |(field_name, selector), result|
+        extractor = ExtractorFactory.create(doc, field_name)
+        result[field_name] = extractor.extract(selector)
       end
     rescue => e
       raise ParseError, "Failed to parse HTML: #{e.message}"

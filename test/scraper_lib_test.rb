@@ -47,4 +47,39 @@ class ScraperLibTest < Minitest::Test
       end
     end
   end
+  
+  def test_scrape_with_meta_tags
+    html = <<~HTML
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Test Page</title>
+        <meta name="description" content="Page description">
+        <meta name="keywords" content="test, page">
+        <meta property="og:title" content="OG Title">
+      </head>
+      <body>
+        <h1>Hello World</h1>
+      </body>
+      </html>
+    HTML
+    
+    mock_response = Minitest::Mock.new
+    mock_response.expect :success?, true
+    mock_response.expect :body, html
+    
+    HTTParty.stub :get, mock_response do
+      client = ScraperLib::Client.new("https://example.com")
+      result = client.scrape({
+        title: "h1",
+        meta: ["description", "keywords", "og:title"]
+      })
+      
+      assert_equal "Hello World", result[:title]
+      assert_instance_of Hash, result[:meta]
+      assert_equal "Page description", result[:meta]["description"]
+      assert_equal "test, page", result[:meta]["keywords"]
+      assert_equal "OG Title", result[:meta]["og:title"]
+    end
+  end
 end
